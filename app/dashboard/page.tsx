@@ -1,0 +1,16 @@
+export default function DashboardPage() {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <p className="text-gray-600 mt-2">Selamat datang di panel admin.</p>
+      <div className="mt-6">
+        <a
+          href="/dashboard/properties"
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Kelola Properti
+        </a>
+      </div>
+    </div>
+  );
+}
