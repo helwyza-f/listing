@@ -21,6 +21,7 @@ export default function PropertiesPage() {
       >
         + Tambah Properti
       </a>
+      <Link href={"/dashboard/properties/new"}>New</Link>
       <Link href={"/dashboard"}>Dashboard</Link>
       <Link href={"/"}>Home</Link>
       <table className="w-full border">
