@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function PropertiesPage() {
@@ -20,6 +21,8 @@ export default function PropertiesPage() {
       >
         + Tambah Properti
       </a>
+      <Link href={"/dashboard"}>Dashboard</Link>
+      <Link href={"/"}>Home</Link>
       <table className="w-full border">
         <thead className="bg-gray-100">
           <tr>
