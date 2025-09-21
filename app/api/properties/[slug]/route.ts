@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -20,6 +21,7 @@ export async function PUT(
     where: { slug: (await params).slug },
     data,
   });
+  revalidateTag("properties");
   return NextResponse.json(updated);
 }
 
@@ -30,5 +32,6 @@ export async function DELETE(
   await prisma.property.delete({
     where: { slug: (await params).slug },
   });
+  revalidateTag("properties");
   return NextResponse.json({ success: true });
 }
