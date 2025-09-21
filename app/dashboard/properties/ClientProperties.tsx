@@ -68,7 +68,7 @@ export default function ClientProperties({
                   size="sm"
                   variant="destructive"
                   onClick={async () => {
-                    await fetch(`/api/properties/${p.id}`, {
+                    await fetch(`/api/properties/${p.slug}`, {
                       method: "DELETE",
                     });
                     mutate(); // refresh data setelah hapus
