@@ -3,21 +3,21 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   const property = await prisma.property.findUnique({
-    where: { slug: params.slug },
+    where: { slug: (await params).slug },
   });
   return NextResponse.json(property);
 }
 
 export async function PUT(
   req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   const data = await req.json();
   const updated = await prisma.property.update({
-    where: { slug: params.slug },
+    where: { slug: (await params).slug },
     data,
   });
   return NextResponse.json(updated);
