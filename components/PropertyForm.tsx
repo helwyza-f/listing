@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import RichTextEditor from "@/components/RichTextEditor";
+import Image from "next/image";
 
 // Definisikan tipe untuk data properti agar lebih aman
 type PropertyData = {
@@ -237,7 +238,7 @@ export default function PropertyForm({ initialData }: PropertyFormProps) {
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mt-4">
             {form.images.map((img, i) => (
               <div key={i} className="relative group aspect-square">
-                <img
+                <Image
                   src={img}
                   alt={`Preview ${i + 1}`}
                   className={`w-full h-full object-cover rounded-md border-2 ${

@@ -5,6 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -38,7 +39,7 @@ export default function ClientProperties({
         {properties?.map((p: any) => (
           <Card key={p.id} className="overflow-hidden shadow-md">
             <div className="relative">
-              <img
+              <Image
                 src={p.thumbnail || p.images?.[0] || "/placeholder.jpg"}
                 alt={p.title}
                 className="h-48 w-full object-cover"
