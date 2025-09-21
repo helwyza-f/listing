@@ -12,10 +12,10 @@ import PropertyDetailsClientView from "@/components/PropertyDetailsClientView";
 export default async function DetailPropertyPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
   // 1. Mengambil data asli dari database
-  const property = await getPropertyBySlug(params.slug);
+  const property = await getPropertyBySlug((await params).slug);
 
   // 2. Jika data tidak ditemukan, tampilkan halaman 404
   if (!property) {
