@@ -240,6 +240,8 @@ export default function PropertyForm({ initialData }: PropertyFormProps) {
               <div key={i} className="relative group aspect-square">
                 <Image
                   src={img}
+                  width={100}
+                  height={100}
                   alt={`Preview ${i + 1}`}
                   className={`w-full h-full object-cover rounded-md border-2 ${
                     form.thumbnail === img

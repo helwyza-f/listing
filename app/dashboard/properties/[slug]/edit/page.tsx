@@ -1,4 +1,4 @@
-// app/dashboard/properties/edit/[slug]/page.tsx
+// app/dashboard/properties/[slug]/edit/page.tsx
 
 import PropertyForm from "@/components/PropertyForm";
 

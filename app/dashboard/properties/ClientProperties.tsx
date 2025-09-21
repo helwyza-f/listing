@@ -42,6 +42,8 @@ export default function ClientProperties({
               <Image
                 src={p.thumbnail || p.images?.[0] || "/placeholder.jpg"}
                 alt={p.title}
+                width={400}
+                height={300}
                 className="h-48 w-full object-cover"
               />
               <span className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 text-xs rounded">
@@ -58,9 +60,9 @@ export default function ClientProperties({
                 dangerouslySetInnerHTML={{ __html: p.description }}
               />
               <div className="flex justify-between mt-4">
-                <Link href={`/dashboard/properties/${p.slug}/edit`}>
+                <Link href={`/dashboard/properties/${p.slug}`}>
                   <Button size="sm" className="bg-blue-500">
-                    Edit
+                    Detail
                   </Button>
                 </Link>
 
