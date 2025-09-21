@@ -25,10 +25,10 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   await prisma.property.delete({
-    where: { slug: params.slug },
+    where: { slug: (await params).slug },
   });
   return NextResponse.json({ success: true });
 }
