@@ -1,45 +1,42 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-
+import slugify from "slugify";
 // GET all properties
 export async function GET() {
-  const properties = await prisma.property.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-  return NextResponse.json(properties);
+  try {
+    const properties = await prisma.property.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(properties);
+  } catch (error) {
+    return NextResponse.json({ error: "Gagal ambil data" }, { status: 500 });
+  }
 }
 
-function slugify(text: string) {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-") // ganti spasi dengan -
-    .replace(/[^\w\-]+/g, "") // hapus karakter aneh
-    .replace(/\-\-+/g, "-"); // hapus double -
-}
-
+// CREATE property
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
-    const slug = slugify(data.title);
+    const body = await req.json();
+    const { title, description, price, location, features, images, thumbnail } =
+      body;
+
+    const slug = slugify(title, { lower: true, strict: true });
 
     const property = await prisma.property.create({
       data: {
-        title: data.title,
-        slug, // wajib isi slug
-        description: data.description,
-        price: data.price,
-        location: data.location,
-        features: data.features || [],
-        images: data.images || [],
-        agentId: data.agentId || null,
+        title,
+        slug,
+        description, // simpan HTML string dari rich editor
+        price,
+        location,
+        features,
+        images,
+        thumbnail,
       },
     });
 
-    return NextResponse.json(property);
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Failed to create" }, { status: 500 });
+    return NextResponse.json(property, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

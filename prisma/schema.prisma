@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  // output   = "../app/generated/prisma"
 }
 
 datasource db {
@@ -13,19 +12,19 @@ model Property {
   title       String
   slug        String   @unique
   description String
-  price       Int
+  price       String
   location    String
   features    String[]
   images      String[]
+  thumbnail   String?     
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  agent       User?    @relation(fields: [agentId], references: [id])
-  agentId     String?  @db.ObjectId
 
   @@index([location])
   @@index([price])
 }
+
 
 model User {
   id         String     @id @default(auto()) @map("_id") @db.ObjectId
@@ -34,6 +33,6 @@ model User {
   password   String?
   phone      String?
   avatar     String?
-  role       String     @default("agent") // admin | agent | viewer
-  properties Property[]
+  role       String     @default("user") // admin | user
+
 }
