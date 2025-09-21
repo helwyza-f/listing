@@ -9,24 +9,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
   }
 
-  // convert ke buffer
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  return new Promise((resolve) => {
-    cloudinary.uploader
-      .upload_stream({ folder: "properties" }, (error, result) => {
-        if (error || !result) {
-          resolve(
-            NextResponse.json(
-              { error: error?.message || "Upload gagal" },
-              { status: 500 }
-            )
-          );
-        } else {
-          resolve(NextResponse.json({ url: result.secure_url }));
+  try {
+    const result = await new Promise<any>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "properties" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
         }
-      })
-      .end(buffer);
-  });
+      );
+      stream.end(buffer);
+    });
+
+    return NextResponse.json({ url: result.secure_url });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || "Upload gagal" },
+      { status: 500 }
+    );
+  }
 }
