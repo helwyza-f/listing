@@ -145,3 +145,14 @@ model ApartmentDetails {
   propertyId String   @unique @db.ObjectId
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("USER") // USER atau ADMIN
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
