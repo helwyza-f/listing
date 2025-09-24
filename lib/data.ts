@@ -1,20 +1,68 @@
-// lib/data.ts (atau di mana pun Anda menempatkan fungsi data fetching)
-import { unstable_cache as cache } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { cache } from "react";
+import { unstable_cache as nextCache } from "next/cache";
+import prisma from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
-// Fungsi untuk mengambil data properti berdasarkan slug DENGAN CACHE
-export const getPropertyBySlug = cache(
-  async (slug: string) => {
-    console.log(`Menjalankan query database untuk slug: ${slug}`); // Tambahkan ini untuk melihat kapan fungsi dijalankan
-    const property = await prisma.property.findUnique({
-      where: { slug },
+// =======================================================
+// FUNGSI UNTUK MENGAMBIL SEMUA PROPERTI
+// =======================================================
+export const getProperties = nextCache(
+  cache(async () => {
+    return prisma.property.findMany({
+      orderBy: { updatedAt: "desc" },
+      // [PERBAIKAN] Tambahkan 'where' untuk memfilter data yang tidak valid
+      where: {
+        category: {
+          // Hanya ambil properti yang kategorinya salah satu dari enum
+          in: ["RUMAH", "TANAH", "RUKO", "APARTEMEN"],
+        },
+      },
+      include: {
+        forSaleListing: true,
+        forRentListing: true,
+        houseDetails: true,
+        landDetails: true,
+        shophouseDetails: true,
+        apartmentDetails: true,
+      },
     });
-    return property;
-  },
-  ["property"], // Key-part untuk cache, membantu Next.js mengidentifikasi cache ini
+  }),
+  ["properties"],
   {
-    // Opsi caching
-    revalidate: 3600, // Cache akan valid selama 1 jam (3600 detik)
-    tags: ["properties"], // Tag umum untuk semua properti
+    tags: ["properties"],
   }
 );
+// =======================================================
+// FUNGSI UNTUK MENGAMBIL SATU PROPERTI
+// =======================================================
+export async function getPropertyBySlug(slug: string) {
+  const cachedPropertyFetcher = nextCache(
+    cache(async () => {
+      console.log(`Mengambil data dari DB untuk slug: ${slug}`);
+
+      const property = await prisma.property.findUnique({
+        where: { slug },
+        include: {
+          forSaleListing: true,
+          forRentListing: true,
+          houseDetails: true,
+          landDetails: true,
+          shophouseDetails: true,
+          apartmentDetails: true,
+        },
+      });
+
+      if (!property) {
+        notFound();
+      }
+
+      return property;
+    }),
+    [`property:${slug}`],
+    {
+      tags: ["properties", `property:${slug}`],
+    }
+  );
+
+  return cachedPropertyFetcher();
+}

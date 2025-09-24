@@ -1,15 +1,10 @@
-// app/dashboard/properties/page.tsx
-import ClientProperties from "./ClientProperties";
-import { prisma } from "@/lib/prisma";
-
-async function getProperties() {
-  return prisma.property.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-}
+import { getProperties } from "@/lib/data"; // Menggunakan fungsi cache dari data.ts
+import ClientProperties from "./ClientProperties"; // Komponen UI Client
+import "server-only";
 
 export default async function PropertiesPage() {
-  const initialData = await getProperties(); // langsung dari DB
+  // Mengambil data awal di server. Ini sangat cepat karena di-cache.
+  const initialData = await getProperties();
 
   return <ClientProperties initialData={initialData} />;
 }

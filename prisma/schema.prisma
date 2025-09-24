@@ -1,38 +1,147 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+// [BARU] Enum untuk memastikan kategori selalu konsisten
+enum PropertyCategory {
+  RUMAH
+  TANAH
+  RUKO
+  APARTEMEN
+}
+
+// [BARU] Enum untuk periode sewa
+enum RentalPeriod {
+  TAHUNAN
+  BULANAN
+  HARIAN
+}
+
+
+// Model dasar yang menyimpan data umum untuk semua properti
 model Property {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   slug        String   @unique
   description String
-  price       String
+  // price       String // Harga sebagai string untuk fleksibilitas (misal: "1 Miliar", "500 Juta")
   location    String
   features    String[]
   images      String[]
-  thumbnail   String     
+  thumbnail   String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Menggunakan Enum untuk kategori
+  category    PropertyCategory
+
+    // [BARU] Relasi ke model listing (penawaran)
+  forSaleListing ForSaleListing?
+  forRentListing ForRentListing?
+
+  // Wadah fleksibel untuk "Informasi Properti" (Harga Nego, Lokasi Aman, dll)
+  infoTags    Json?
+
+  // Relasi opsional ke model detail spesifikasi
+  houseDetails     HouseDetails?
+  landDetails      LandDetails?
+  shophouseDetails ShophouseDetails? // Ruko
+  apartmentDetails ApartmentDetails?
+
   @@index([location])
-  @@index([price])
+  // @@index([price])
+  @@index([category])
 }
 
 
-model User {
-  id         String     @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  email      String     @unique
-  password   String?
-  phone      String?
-  avatar     String?
-  role       String     @default("user") // admin | user
+// ===============================================
+// [BARU] MODEL UNTUK PENAWARAN (LISTING)
+// ===============================================
 
+// Model untuk penawaran JUAL
+model ForSaleListing {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  price      String   // Harga jual
+  isActive   Boolean  @default(true) // Apakah listing jual ini aktif?
+  
+  propertyId String   @unique @db.ObjectId
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+// Model untuk penawaran SEWA
+model ForRentListing {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  price        String       // Harga sewa
+  period       RentalPeriod // Misal: TAHUNAN, BULANAN
+  isActive     Boolean      @default(true) // Apakah listing sewa ini aktif?
+
+  propertyId   String       @unique @db.ObjectId
+  property     Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+
+// ===============================================
+// MODEL DETAIL SPESIFIKASI UNTUK SETIAP KATEGORI
+// ===============================================
+
+// Model untuk detail spesifik RUMAH
+model HouseDetails {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  luasBangunan  Int
+  luasTanah     Int
+  kamarTidur    Int
+  kamarMandi    Int
+  jumlahLantai  Int
+  jumlahGarasi  Int
+  dayaListrik   Int
+  sertifikat    String
+
+  propertyId String   @unique @db.ObjectId
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+// Model untuk detail spesifik TANAH
+model LandDetails {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  luasTanah  Int
+  sertifikat String
+
+  propertyId String   @unique @db.ObjectId
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+// Model untuk detail spesifik RUKO (Rumah Toko)
+model ShophouseDetails {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  luasBangunan  Int
+  luasTanah     Int
+  jumlahLantai  Int
+  kamarMandi    Int    // Kamar mandi untuk usaha/karyawan
+  areaParkir    Int    // Dalam satuan meter persegi atau jumlah mobil
+  dayaListrik   Int
+  sertifikat    String
+
+  propertyId String   @unique @db.ObjectId
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+// Model untuk detail spesifik APARTEMEN
+model ApartmentDetails {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  luasBangunan Int
+  kamarTidur   Int
+  kamarMandi   Int
+  lantaiKe     Int    // Berada di lantai berapa
+  tipeUnit     String // Misal: "Studio", "2BR", "3BR+1"
+  dayaListrik  Int
+  sertifikat   String // Biasanya HGB Murni atau Strata Title
+
+  propertyId String   @unique @db.ObjectId
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }

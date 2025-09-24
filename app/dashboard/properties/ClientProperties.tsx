@@ -1,93 +1,93 @@
-// app/dashboard/properties/ClientProperties.tsx
 "use client";
 
 import Link from "next/link";
 import useSWR from "swr";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { FullProperty } from "@/lib/types"; // Tipe data terpusat kita
+import PropertyCard from "./PropertyCard";
+
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { PlusCircle, LayoutDashboard, Home, AlertTriangle } from "lucide-react";
 
+// Fungsi fetcher untuk SWR
+const fetcher = (url: string) =>
+  fetch(url).then((res) => {
+    if (!res.ok) throw new Error("Gagal mengambil data properti.");
+    return res.json();
+  });
+
+// Komponen Utama
 export default function ClientProperties({
   initialData,
 }: {
-  initialData: any[];
+  initialData: FullProperty[];
 }) {
-  const { data: properties, mutate } = useSWR("/api/properties", fetcher, {
-    fallbackData: initialData, // gunakan hasil ISR sebagai cache awal
-    refreshInterval: 30000, // auto update tiap 30 detik
-    revalidateOnFocus: true, // update kalau tab aktif lagi
+  const {
+    data: properties,
+    error,
+    mutate,
+  } = useSWR<FullProperty[]>("/api/properties", fetcher, {
+    fallbackData: initialData,
+    revalidateOnFocus: true, // Auto-update saat tab kembali aktif
   });
 
+  if (error) {
+    return (
+      <div className="text-center py-16 px-6 bg-red-50 border-2 border-red-200 border-dashed rounded-lg">
+        <AlertTriangle className="mx-auto h-12 w-12 text-red-400" />
+        <h3 className="mt-2 text-xl font-semibold text-red-900">
+          Oops, Gagal Memuat Data
+        </h3>
+        <p className="mt-1 text-sm text-red-700">{error.message}</p>
+        <div className="mt-6">
+          <Button onClick={() => mutate()} variant="destructive">
+            Coba Lagi
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Daftar List</h1>
-        <div className="space-x-2">
-          <Link href="/dashboard/properties/new">
-            <Button className="bg-green-600">+ Tambah Properti</Button>
-          </Link>
+    <div className="p-4 md:p-6">
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-6 border-b pb-4">
+        <div>
+          <h1 className="text-3xl font-bold">Kelola Properti Anda</h1>
+          <p className="text-gray-500">
+            Total {properties?.length || 0} properti ditemukan.
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
           <Link href="/dashboard">
-            <Button variant="secondary">← Dashboard</Button>
+            <Button variant="outline">
+              <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+            </Button>
+          </Link>
+          <Link href="/dashboard/properties/new">
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" /> Tambah Properti
+            </Button>
           </Link>
         </div>
       </div>
 
-      {/* Grid List */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {properties?.map((p: any) => (
-          <Card key={p.id} className="overflow-hidden shadow-md">
-            <div className="relative">
-              <Image
-                src={p.thumbnail || p.images?.[0] || "/placeholder.jpg"}
-                alt={p.title}
-                width={400}
-                height={300}
-                className="h-48 w-full object-cover"
-              />
-              <span className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 text-xs rounded">
-                Rp {p.price.toLocaleString()}
-              </span>
-            </div>
-            <CardHeader>
-              <CardTitle className="truncate">{p.title}</CardTitle>
-              <p className="text-sm text-gray-500">{p.location}</p>
-            </CardHeader>
-            <CardContent>
-              <div
-                className="prose prose-sm line-clamp-2 text-gray-700"
-                dangerouslySetInnerHTML={{ __html: p.description }}
-              />
-              <div className="flex justify-between mt-4">
-                <Link href={`/dashboard/properties/${p.slug}`}>
-                  <Button size="sm" className="bg-blue-500">
-                    Detail
-                  </Button>
-                </Link>
-
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={async () => {
-                    await fetch(`/api/properties/${p.slug}`, {
-                      method: "DELETE",
-                    });
-                    mutate(); // refresh data setelah hapus
-                  }}
-                >
-                  Hapus
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {properties?.length === 0 && (
-        <p className="text-center text-gray-500 mt-10">
-          Belum ada properti ditambahkan.
-        </p>
+      {properties && properties.length > 0 ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {properties.map((p) => (
+            <PropertyCard key={p.id} property={p} onMutate={mutate} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16 px-6 border-2 border-dashed rounded-lg">
+          <Home className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-xl font-semibold text-gray-900">
+            Belum Ada Properti
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Mulai dengan menambahkan properti pertama Anda.
+          </p>
+        </div>
       )}
     </div>
   );
