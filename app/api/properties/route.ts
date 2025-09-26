@@ -1,19 +1,65 @@
+// app/api/properties/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma"; // Pastikan path prisma client Anda benar
 import slugify from "slugify";
 
-// GET: Mengambil semua properti (tetap sama)
-export async function GET() {
+// GET: Mengambil semua properti
+export async function GET(req: Request) {
   try {
-    const properties = await prisma.property.findMany({
-      orderBy: { updatedAt: "desc" },
-      // [PERBAIKAN] Tambahkan 'where' untuk memfilter data yang tidak valid
-      where: {
-        category: {
-          // Hanya ambil properti yang kategorinya salah satu dari enum
-          in: ["RUMAH", "TANAH", "RUKO", "APARTEMEN"],
-        },
+    const { searchParams } = new URL(req.url);
+    const location = searchParams.get("lokasi");
+    const category = searchParams.get("kategori");
+    const priceMin = searchParams.get("hargaMin");
+    const priceMax = searchParams.get("hargaMax");
+    const sortBy = searchParams.get("urutkan") || "updatedAt_desc";
+
+    const where: any = {
+      category: {
+        in: ["RUMAH", "TANAH", "RUKO", "APARTEMEN"],
       },
+      // [PERBAIKAN] Sintaks yang benar untuk filter relasi
+      forSaleListing: {
+        isActive: true,
+      },
+    };
+
+    if (location) {
+      where.location = { contains: location, mode: "insensitive" };
+    }
+    if (category) {
+      where.category = category;
+    }
+    if (priceMin) {
+      const min = parseInt(priceMin, 10);
+      if (!isNaN(min)) {
+        where.forSaleListing.price = {
+          ...where.forSaleListing.price,
+          gte: min,
+        };
+      }
+    }
+    if (priceMax) {
+      const max = parseInt(priceMax, 10);
+      if (!isNaN(max)) {
+        where.forSaleListing.price = {
+          ...where.forSaleListing.price,
+          lte: max,
+        };
+      }
+    }
+
+    let orderBy: any = {};
+    if (sortBy === "harga_asc") {
+      orderBy = { forSaleListing: { price: "asc" } };
+    } else if (sortBy === "harga_desc") {
+      orderBy = { forSaleListing: { price: "desc" } };
+    } else {
+      orderBy = { updatedAt: "desc" };
+    }
+    console.log(where);
+    const properties = await prisma.property.findMany({
+      where,
+      orderBy,
       include: {
         forSaleListing: true,
         forRentListing: true,
@@ -23,11 +69,12 @@ export async function GET() {
         apartmentDetails: true,
       },
     });
+
     return NextResponse.json(properties);
   } catch (error) {
     console.error("Gagal mengambil data properti:", error);
     return NextResponse.json(
-      { error: "Terjadi kesalahan pada server saat mengambil data." },
+      { error: "Terjadi kesalahan pada server." },
       { status: 500 }
     );
   }
@@ -138,14 +185,14 @@ export async function POST(req: Request) {
 
       if (listingType.forSale && priceSale) {
         await tx.forSaleListing.create({
-          data: { price: priceSale, propertyId: property.id },
+          data: { price: Number(priceSale), propertyId: property.id }, // <-- Gunakan Number()
         });
       }
 
       if (listingType.forRent && priceRent) {
         await tx.forRentListing.create({
           data: {
-            price: priceRent,
+            price: Number(priceRent),
             period: rentPeriod,
             propertyId: property.id,
           },

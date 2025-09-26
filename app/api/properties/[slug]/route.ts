@@ -84,7 +84,7 @@ export async function PUT(
       if (listingType.forSale && priceSale) {
         await tx.forSaleListing.upsert({
           where: { propertyId: propertyToUpdate.id },
-          update: { price: priceSale },
+          update: { price: Number(priceSale) },
           create: { price: priceSale, propertyId: propertyToUpdate.id },
         });
       } else {
@@ -97,9 +97,9 @@ export async function PUT(
       if (listingType.forRent && priceRent) {
         await tx.forRentListing.upsert({
           where: { propertyId: propertyToUpdate.id },
-          update: { price: priceRent, period: rentPeriod },
+          update: { price: Number(priceRent), period: rentPeriod },
           create: {
-            price: priceRent,
+            price: Number(priceRent),
             period: rentPeriod,
             propertyId: propertyToUpdate.id,
           },

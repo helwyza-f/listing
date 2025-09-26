@@ -1,23 +1,19 @@
-// app/(public)/page.tsx
-import { prisma } from "@/lib/prisma";
+// File: app/(public)/page.tsx
 
-export const revalidate = 300; // regenerate setiap 5 menit
+import { getProperties } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
+import LatestListings from "@/components/LatestListings";
+import TitipJualSection from "@/components/TitipJualSection";
 
 export default async function HomePage() {
-  const totalProperties = await prisma.property.count();
+  // Ambil data listing terbaru di server (sangat cepat karena di-cache)
+  const latestProperties = await getProperties();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <h1 className="text-4xl font-bold mb-4">
-        Selamat Datang di Aplikasi Properti!
-      </h1>
-      <p className="text-lg text-center mb-8 px-4">
-        Jelajahi berbagai properti yang tersedia dan temukan rumah impian Anda.
-      </p>
-      <div className="text-center">
-        <p className="text-xl mb-2">Total Properti Terdaftar:</p>
-        <p className="text-3xl font-semibold">{totalProperties}</p>
-      </div>
+    <div className="space-y-16 md:space-y-24">
+      <HeroSection />
+      <LatestListings initialData={latestProperties} />
+      <TitipJualSection />
     </div>
   );
 }

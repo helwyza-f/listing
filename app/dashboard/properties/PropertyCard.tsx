@@ -54,8 +54,8 @@ export default function PropertyCard({
   onMutate: () => void;
 }) {
   // [OPTIMASI] Fungsi format harga yang lebih baik (e.g., 700 Juta, 1.5 Miliar)
-  const formatPrice = (price: string) => {
-    const num = Number(price);
+  const formatPrice = (price: number) => {
+    const num = price;
     if (isNaN(num)) return "N/A";
 
     if (num >= 1_000_000_000) {
@@ -200,7 +200,7 @@ export default function PropertyCard({
         <div className="flex justify-between items-end mt-3">
           <div>
             <p className="text-lg font-bold text-green-700">
-              Rp. {formatPrice(property.forSaleListing?.price || "0")}
+              Rp. {formatPrice(property.forSaleListing?.price || 0)}
             </p>
           </div>
           <div className="flex items-center space-x-1">

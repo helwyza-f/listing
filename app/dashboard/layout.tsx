@@ -1,7 +1,8 @@
-"use client"; // Diperlukan untuk hook seperti usePathname
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react"; // [BARU] Impor untuk sesi & logout
 import {
   Home,
   Building,
@@ -10,9 +11,10 @@ import {
   LogOut,
   LayoutDashboard,
 } from "lucide-react";
-import { cn } from "@/lib/utils"; // Utilitas dari Shadcn UI
+import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton"; // [BARU] Impor untuk loading state
 
-// Komponen kecil untuk link di sidebar agar lebih rapi
+// Komponen SidebarLink (tidak ada perubahan)
 function SidebarLink({
   href,
   icon: Icon,
@@ -23,7 +25,8 @@ function SidebarLink({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const isActive =
+    href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 
   return (
     <Link href={href}>
@@ -42,23 +45,73 @@ function SidebarLink({
   );
 }
 
+// [BARU] Komponen untuk menampilkan profil pengguna
+function UserProfile() {
+  const { data: session } = useSession();
+
+  if (!session?.user) return null;
+
+  return (
+    <div className="border-t pt-4">
+      <div className="flex items-center gap-3 px-3 py-2 mb-2">
+        <UserCircle className="w-10 h-10 text-muted-foreground" />
+        <div className="flex flex-col">
+          <p className="text-sm font-semibold">{session.user.name}</p>
+          <p className="text-xs text-muted-foreground">{session.user.email}</p>
+        </div>
+      </div>
+      <div className="space-y-1">
+        <SidebarLink href="/dashboard/profile" icon={Settings}>
+          Profil Saya
+        </SidebarLink>
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })} // Arahkan ke homepage setelah logout
+          className="w-full flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors text-red-500 hover:bg-red-50"
+        >
+          <LogOut className="w-5 h-5 mr-3" />
+          Keluar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// [BARU] Komponen untuk loading state profil
+function UserProfileSkeleton() {
+  return (
+    <div className="border-t pt-4">
+      <div className="flex items-center gap-3 px-3 py-2 mb-2">
+        <Skeleton className="w-10 h-10 rounded-full" />
+        <div className="flex flex-col space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+      </div>
+      <div className="space-y-1">
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // [BARU] Ambil status sesi
+  const { status } = useSession();
+
   return (
     <div className="flex min-h-screen bg-muted/40">
-      {/* Sidebar (Navigasi Utama) */}
       <aside className="hidden md:flex md:flex-col md:w-64 border-r bg-background">
         <div className="flex flex-col flex-grow p-4">
-          {/* Logo atau Judul Dashboard */}
           <div className="h-16 flex items-center px-3 mb-4">
             <Home className="w-6 h-6 mr-3" />
             <h1 className="text-xl font-bold">Dasbor Properti</h1>
           </div>
 
-          {/* Grup Navigasi */}
           <nav className="flex-1 space-y-2">
             <SidebarLink href="/dashboard" icon={LayoutDashboard}>
               Beranda
@@ -66,30 +119,18 @@ export default function DashboardLayout({
             <SidebarLink href="/dashboard/properties" icon={Building}>
               Properti
             </SidebarLink>
-            <SidebarLink href="/dashboard/settings" icon={Settings}>
-              Pengaturan
-            </SidebarLink>
+            {/* <SidebarLink href="/dashboard/settings" icon={Settings}>Pengaturan</SidebarLink> */}
           </nav>
 
-          {/* Bagian Bawah Sidebar (User/Logout) */}
+          {/* [PERBAIKAN] Bagian bawah sidebar sekarang dinamis */}
           <div className="mt-auto">
-            <div className="border-t pt-4 space-y-2">
-              <SidebarLink href="/dashboard/profile" icon={UserCircle}>
-                Profil Saya
-              </SidebarLink>
-              <button className="w-full flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors text-red-500 hover:bg-red-50">
-                <LogOut className="w-5 h-5 mr-3" />
-                Keluar
-              </button>
-            </div>
+            {status === "loading" && <UserProfileSkeleton />}
+            {status === "authenticated" && <UserProfile />}
           </div>
         </div>
       </aside>
 
-      {/* Konten Utama */}
-      <main className="flex-1 p-4 sm:p-2 lg:p-2">
-        {children} {/* Di sinilah semua page.tsx Anda akan di-render */}
-      </main>
+      <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
     </div>
   );
 }

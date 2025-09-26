@@ -38,8 +38,8 @@ type FormState = {
   location: string;
   category?: "RUMAH" | "TANAH" | "RUKO" | "APARTEMEN";
   listingType: { forSale: boolean; forRent: boolean };
-  priceSale: string;
-  priceRent: string;
+  priceSale: number | string;
+  priceRent: number | string;
   rentPeriod: "TAHUNAN" | "BULANAN" | "HARIAN";
   images: string[];
   thumbnail: string | null;
@@ -261,9 +261,14 @@ export default function PropertyForm({
     });
   };
 
-  // Handler untuk mengubah input
+  // Di dalam handleInputChange
   const handleInputChange = (field: keyof FormState, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === "priceSale" || field === "priceRent") {
+      // Pastikan nilai yang disimpan adalah angka jika valid
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleDetailChange = (field: string, value: any) => {
@@ -573,7 +578,7 @@ export default function PropertyForm({
   console.log("Current category in state:", formData.category);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-3">
       {/* KARTU INFORMASI DASAR */}
       <Card>
         <CardHeader>

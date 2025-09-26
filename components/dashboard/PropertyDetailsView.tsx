@@ -67,7 +67,7 @@ export default function PropertyDetailsView({
     });
   };
 
-  const formatPrice = (price: string) =>
+  const formatPrice = (price: number) =>
     new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",

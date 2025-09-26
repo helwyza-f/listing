@@ -1,11 +1,5 @@
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PlusCircle, LayoutDashboard } from "lucide-react";
 
 // Komponen ini akan ditampilkan secara otomatis oleh Next.js
 export default function PropertiesLoading() {

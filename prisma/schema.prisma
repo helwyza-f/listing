@@ -64,27 +64,26 @@ model Property {
 // [BARU] MODEL UNTUK PENAWARAN (LISTING)
 // ===============================================
 
-// Model untuk penawaran JUAL
+// Di dalam model ForSaleListing
 model ForSaleListing {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  price      String   // Harga jual
-  isActive   Boolean  @default(true) // Apakah listing jual ini aktif?
+  price      Int      // [PERBAIKAN] Ubah dari String ke Int
+  isActive   Boolean  @default(true)
   
   propertyId String   @unique @db.ObjectId
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
-// Model untuk penawaran SEWA
+// Di dalam model ForRentListing
 model ForRentListing {
-  id           String       @id @default(auto()) @map("_id") @db.ObjectId
-  price        String       // Harga sewa
-  period       RentalPeriod // Misal: TAHUNAN, BULANAN
-  isActive     Boolean      @default(true) // Apakah listing sewa ini aktif?
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  price      Int          // [PERBAIKAN] Ubah dari String ke Int
+  period     RentalPeriod
+  isActive   Boolean      @default(true)
 
   propertyId   String       @unique @db.ObjectId
   property     Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
-
 
 // ===============================================
 // MODEL DETAIL SPESIFIKASI UNTUK SETIAP KATEGORI
@@ -152,7 +151,7 @@ model User {
   name      String?
   password  String
   role      String   @default("USER") // USER atau ADMIN
-  isAdmin   Boolean  @default(false)
+  // isAdmin   Boolean  @default(false) // <-- HAPUS BARIS INI
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
